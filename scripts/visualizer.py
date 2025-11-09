@@ -122,3 +122,12 @@ class Visualizer:
             fig.show()
             figures.append(fig)
         return figures
+    
+    def roc_curves_comparison(self, roc_data: list, best_model_name: str, best_score: float) -> go.Figure:
+        """Create ROC curves comparison graph."""
+        fig = go.Figure([go.Scatter(x=fpr, y=tpr, mode='lines', name=f'{name} (AUC = {auc:.4f})') for name, fpr, tpr, auc in roc_data] +
+                       [go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Random', line=dict(dash='dash'))])
+        fig.update_layout(title=dict(text=f'ROC Curves Comparison | Best Model: {best_model_name} (AUC = {best_score:.4f})', font=self.TITLE_FONT),
+                         xaxis_title='False Positive Rate', yaxis_title='True Positive Rate', height=500)
+        fig.show()
+        return fig
