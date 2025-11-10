@@ -2,8 +2,11 @@ import pandas as pd
 import os
 import tempfile
 import img2pdf
+from pathlib import Path
 
-OUTPUT_PATH = "C:/Users/as_cu/Desktop/use_case/output"
+# Get project root (scripts/ -> use_case/)
+project_root = Path(r"C:\Users\as_cu\Desktop\use_case")
+OUTPUT_PATH = project_root / "output"
 
 
 def abtest_summary_table(df: pd.DataFrame, variables: list, group_column: str = 'ab_test_cohort') -> pd.DataFrame:
@@ -35,8 +38,8 @@ def abtest_summary_table(df: pd.DataFrame, variables: list, group_column: str = 
 
 def export_to_pdf(figures: list, filename: str = 'churn_risk_analysis.pdf'):
     """Export figures to PDF."""
-    os.makedirs(OUTPUT_PATH, exist_ok=True)
-    pdf_path = os.path.join(OUTPUT_PATH, filename)
+    OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+    pdf_path = OUTPUT_PATH / filename
     with tempfile.TemporaryDirectory() as tmpdir:
         image_paths = [os.path.join(tmpdir, f'fig_{i}.png') for i in range(len(figures))]
         for fig, path in zip(figures, image_paths):

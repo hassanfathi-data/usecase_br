@@ -24,12 +24,9 @@ def calculate_models_performance(models: list, X_train, X_test, y_train, y_test)
     return roc_data, best_model, best_score, trained_models
 
 
-def compute_feature_importance(df: pd.DataFrame, variables: list, target_var: str = 'd30', test_size: float = 0.2, random_state: int = 42):
-    """Test multiple models, select the best one, and return feature importance."""
-    from scripts.preprocessor import prepare_features
+def compute_feature_importance(X_train, X_test, y_train, y_test, variables: list):
+    """Train multiple models, select the best one, and return feature importance."""
     models = [XGBoostModel(random_state=100), RandomForestModel(random_state=123), LogisticRegressionModel(random_state=456)]
-    df_prepared, label_encoders = prepare_features(df, variables, target_var)
-    X_train, X_test, y_train, y_test = train_test_split(df_prepared[variables], df_prepared[target_var], test_size=test_size, random_state=random_state)
     roc_data, best_model, best_score, trained_models = calculate_models_performance(models, X_train, X_test, y_train, y_test)
     
     importance_df = pd.DataFrame({'Feature': variables, 'Importance': best_model.get_feature_importance(variables)}).sort_values('Importance', ascending=False).reset_index(drop=True)
