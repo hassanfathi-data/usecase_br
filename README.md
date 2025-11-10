@@ -32,12 +32,26 @@ use_case/
 pip install -r requirements.txt
 ```
 
-2. Place your data files in the `ressource/` folder:
+2. **Configure the project root path**: 
+   - **In the notebooks**: Open `notebooks/part1a_churn_risk_drivers.ipynb` and `notebooks/part1c_ab_test_analysis.ipynb`
+     - In the first cell of each notebook, update the `project_root` variable to point to your `use_case` folder:
+     ```python
+     project_root = Path(r"C:\Users\as_cu\Desktop\use_case")
+     ```
+   - **In the scripts**: Open `scripts/formatter.py`
+     - Update the `project_root` variable (line 8) to point to your `use_case` folder:
+     ```python
+     project_root = Path(r"C:\Users\as_cu\Desktop\use_case")
+     ```
+   - Replace the path with the actual location of your `use_case` folder on your system
+   - This ensures all imports and file paths work correctly
+
+3. Place your data files in the `ressource/` folder:
    - `d0_behaviour_br.csv`
    - `retention_br.csv`
    - `ab_test_br.csv`
 
-3. Run the notebooks:
+4. Run the notebooks:
    - Open `notebooks/part1a_churn_risk_drivers.ipynb` for churn analysis
    - Open `notebooks/part1c_ab_test_analysis.ipynb` for A/B test analysis
 
