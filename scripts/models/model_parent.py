@@ -23,10 +23,10 @@ class ModelParent:
         return self.model.predict_proba(X)[:, 1]
     
     def get_feature_importance(self, variables: list):
-        """Extract feature importance from the model."""
-        if hasattr(self.model, 'feature_importances_'):
+        """Extract feature importance from the model based on model type."""
+        if self.name in ['XGBoost', 'Random Forest']:
             return self.model.feature_importances_
-        elif hasattr(self.model, 'coef_'):
+        elif self.name == 'Logistic Regression':
             return np.abs(self.model.coef_[0])
         else:
             return np.zeros(len(variables))

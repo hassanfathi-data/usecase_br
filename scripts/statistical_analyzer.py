@@ -43,7 +43,7 @@ def student_test(df: pd.DataFrame, variable: str, group_column: str = 'ab_test_c
     df_without_outlier = remove_top_1_percent(df, [variable])
     test_data = df_without_outlier[df_without_outlier[group_column] == 'test'][variable].values
     control_data = df_without_outlier[df_without_outlier[group_column] == 'control'][variable].values
-    _, p_value = ttest_ind(test_data, control_data)
+    t_statistic, p_value = ttest_ind(test_data, control_data)
     return p_value
 
 
