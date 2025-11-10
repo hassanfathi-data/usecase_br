@@ -12,7 +12,6 @@ use_case/
 │   ├── part1a_churn_risk_drivers.ipynb
 │   └── part1c_ab_test_analysis.ipynb
 ├── scripts/                # Python modules
-│   ├── data_loader.py      # Load CSV datasets
 │   ├── data_cleaner.py     # Data cleaning operations
 │   ├── preprocessor.py     # Data preprocessing (segmentation, merging)
 │   ├── visualizer.py       # Plotly visualizations
@@ -20,6 +19,10 @@ use_case/
 │   ├── formatter.py        # Table formatting and PDF export
 │   ├── feature_importance.py  # ML models for feature importance
 │   └── models/             # ML model implementations
+│       ├── xgboost_model.py
+│       ├── random_forest_model.py
+│       ├── logistic_regression_model.py
+│       └── model_parent.py
 ├── ressource/              # Data files (CSV)
 ├── output/                 # Generated PDF reports
 └── requirements.txt        # Python dependencies
@@ -34,16 +37,12 @@ pip install -r requirements.txt
 
 2. **Configure the project root path**: 
    - **In the notebooks**: Open `notebooks/part1a_churn_risk_drivers.ipynb` and `notebooks/part1c_ab_test_analysis.ipynb`
-     - In the first cell of each notebook, update the `project_root` variable to point to your `use_case` folder:
+     - In the first cell of each notebook, set the `project_root` variable to point to the `use_case` folder:
      ```python
-     project_root = Path(r"C:\Users\as_cu\Desktop\use_case")
+     project_root = Path(r"path/to/your/use_case")
      ```
    - **In the scripts**: Open `scripts/formatter.py`
-     - Update the `project_root` variable (line 8) to point to your `use_case` folder:
-     ```python
-     project_root = Path(r"C:\Users\as_cu\Desktop\use_case")
-     ```
-   - Replace the path with the actual location of your `use_case` folder on your system
+     - Update the `project_root` variable to point to the `use_case` folder
    - This ensures all imports and file paths work correctly
 
 3. Place your data files in the `ressource/` folder:
@@ -61,7 +60,7 @@ pip install -r requirements.txt
 - Qualitative and quantitative variable impact on retention
 - Chi-square tests for significance
 - Correlation heatmaps
-- Feature importance using ML models (XGBoost, LightGBM, Logistic Regression)
+- Feature importance using ML models (XGBoost, Random Forest, Logistic Regression)
 - ROC AUC curve comparison
 - PDF export of all visualizations
 
