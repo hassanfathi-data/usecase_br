@@ -56,3 +56,11 @@ def permutation_test_func(df: pd.DataFrame, variable: str, group_column: str = '
     result = permutation_test((test_data, control_data), statistic=lambda a, b: np.mean(a) - np.mean(b), 
                                n_resamples=2000, alternative='two-sided')
     return result.pvalue
+
+
+def retention_correlation_matrix(df: pd.DataFrame, retention_columns: list = ['d0', 'd3', 'd7', 'd14', 'd30']) -> pd.DataFrame:
+    """Compute correlation matrix between retention variables (d0, d3, d7, d14, d30)."""
+    available_columns = [col for col in retention_columns if col in df.columns]
+    if not available_columns:
+        return pd.DataFrame()
+    return df[available_columns].corr()

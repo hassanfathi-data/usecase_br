@@ -44,7 +44,7 @@ def fill_os_with_device_model(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def fill_null_with_binary(df: pd.DataFrame, column_name: str, seed: int = 33) -> pd.DataFrame:
+def fill_null_with_random_bernouilli(df: pd.DataFrame, column_name: str, seed: int = 33) -> pd.DataFrame:
     """Fill null values in a binary column with random values based on column probability."""
     null_mask = df[column_name].isna()
     null_count = null_mask.sum()

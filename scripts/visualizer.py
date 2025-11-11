@@ -19,10 +19,23 @@ def qualitative_variables_impacts_on_retention(df: pd.DataFrame, qualitative_var
         show_annotations = len(avg) <= 15
         fig = go.Figure(go.Bar(x=avg.index, y=avg_percent, marker_color=colors, 
                               text=[f'{val:.1f}%' for val in avg_percent] if show_annotations else None,
-                              textposition='inside', textfont=dict(color='white')))
+                              textposition='inside', textfont=dict(color='white'), showlegend=False))
         fig.update_xaxes(type='category', categoryorder='array', categoryarray=avg.index.tolist())
+        # Add legend entries for color coding (only visible in legend)
+        if len(avg) > 0:
+            fig.add_trace(go.Bar(x=[avg.index[0]], y=[0], marker_color='blue',
+                                name='≥ 300 observations', showlegend=True, visible='legendonly'))
+            fig.add_trace(go.Bar(x=[avg.index[0]], y=[0], marker_color='grey',
+                                name='< 300 observations', showlegend=True, visible='legendonly'))
         fig.update_layout(title=dict(text=f'Average {target_var} by {var} | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
-                        xaxis_title=var, yaxis_title=f'Average {target_var} (%)', height=400, showlegend=False)
+                        xaxis_title=var, yaxis_title=f'Average {target_var} (%)', height=400, showlegend=True,
+                        legend=dict(
+                            yanchor="top",
+                            y=0.99,
+                            xanchor="left",
+                            x=1.01,
+                            itemsizing="constant"
+                        ))
         fig.show()
         figures.append(fig)
     return figures
@@ -34,9 +47,22 @@ def _create_quantitative_fig(var_name, labels, avg, counts, p_val, target_var: s
     percent = avg.values * 100
     sig = 'Significant' if p_val < 0.05 else 'Not Significant'
     fig = go.Figure(go.Bar(x=labels, y=percent, marker_color=colors, text=[f'{val:.1f}%' for val in percent], 
-                          textposition='inside', textfont=dict(color='white')))
+                          textposition='inside', textfont=dict(color='white'), showlegend=False))
+    # Add legend entries for color coding (only visible in legend)
+    if len(labels) > 0:
+        fig.add_trace(go.Bar(x=[labels[0]], y=[0], marker_color='blue',
+                            name='≥ 300 observations', showlegend=True, visible='legendonly'))
+        fig.add_trace(go.Bar(x=[labels[0]], y=[0], marker_color='grey',
+                            name='< 300 observations', showlegend=True, visible='legendonly'))
     fig.update_layout(title=dict(text=f'{var_name} vs {target_var.upper()} Retention | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
-                    xaxis_title=var_name.lower(), yaxis_title=f'Average {target_var.upper()} Retention (%)', height=400, showlegend=False)
+                    xaxis_title=var_name.lower(), yaxis_title=f'Average {target_var.upper()} Retention (%)', height=400, showlegend=True,
+                    legend=dict(
+                        yanchor="top",
+                        y=0.99,
+                        xanchor="left",
+                        x=1.01,
+                        itemsizing="constant"
+                    ))
     fig.show()
     return fig
 
@@ -135,5 +161,34 @@ def roc_curves_comparison(roc_data: list, best_model_name: str, best_score: floa
                    [go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Random', line=dict(dash='dash'))])
     fig.update_layout(title=dict(text=f'ROC Curves Comparison | Best Model: {best_model_name} (AUC = {best_score:.4f})', font=TITLE_FONT),
                      xaxis_title='False Positive Rate', yaxis_title='True Positive Rate', height=500)
+    fig.show()
+    return fig
+
+
+def retention_correlation_heatmap(df: pd.DataFrame, retention_columns: list = ['d0', 'd3', 'd7', 'd14', 'd30']) -> go.Figure:
+    """Create a heatmap showing correlations between retention variables."""
+    from scripts.statistical_analyzer import retention_correlation_matrix
+    corr_matrix = retention_correlation_matrix(df, retention_columns)
+    if corr_matrix.empty:
+        return go.Figure()
+    
+    fig = go.Figure(data=go.Heatmap(
+        z=corr_matrix.values,
+        x=corr_matrix.columns,
+        y=corr_matrix.index,
+        colorscale='RdBu',
+        zmid=0,
+        text=corr_matrix.values,
+        texttemplate='%{text:.3f}',
+        textfont={"size": 12},
+        colorbar=dict(title="Correlation")
+    ))
+    fig.update_layout(
+        title=dict(text='Retention Variables Correlation Matrix', font=TITLE_FONT),
+        xaxis_title='Retention Period',
+        yaxis_title='Retention Period',
+        height=500,
+        width=600
+    )
     fig.show()
     return fig
