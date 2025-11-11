@@ -35,10 +35,7 @@ use_case/
 pip install -r requirements.txt
 ```
 
-2. Place your data files in the `ressource/` folder:
-   - `d0_behaviour_br.csv`
-   - `retention_br.csv`
-   - `ab_test_br.csv`
+2. Data are already available in the `ressource/` folder.
 
 3. Run the notebooks:
    - Open `notebooks/part1a_churn_risk_drivers.ipynb` for churn analysis

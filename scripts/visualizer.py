@@ -20,6 +20,15 @@ def add_legend_entries(fig: go.Figure, first_item):
                             name='< 300 observations', showlegend=True, visible='legendonly'))
 
 
+def convert_label(label, var_name: str) -> str:
+    """Convert interval labels to readable strings."""
+    if isinstance(label, pd.Interval):
+        if var_name == 'session_length_segmented':
+            return f"{int(label.left/60)} mins"
+        return f"{int(label.left)}-{int(label.right)}"
+    return str(label)
+
+
 def qualitative_variables_impacts_on_retention(df: pd.DataFrame, qualitative_vars: list, target_var: str = 'd30', min_obs_low: int = 30, min_obs_high: int = 300):
     """Create bar charts showing average retention for each qualitative variable modality."""
     from scripts.statistical_analyzer import chi2_test
@@ -90,15 +99,7 @@ def correlation_study(df: pd.DataFrame, min_obs: int = 30):
         p_val = chi2_test_pair(df, var1, var2, min_obs)['p_value']
         sig = is_significant(p_val)
 
-        def convert_label(label, var_name):
-            """Convert interval labels to readable strings."""
-            if isinstance(label, pd.Interval):
-                if var_name == 'session_length_segmented':
-                    return f"{int(label.left/60)} mins"
-                return f"{int(label.left)}-{int(label.right)}"
-            return str(label)
-
-        fig = go.Figure(data=go.Heatmap(z=contingency.values, x=[convert_label(x, var2) for x in contingency.columns], 
+        fig = go.Figure(data=go.Heatmap(z=contingency.values, x=[convert_label(x, var2) for x in contingency.columns],
                                        y=[convert_label(y, var1) for y in contingency.index], colorscale='Blues'))
         fig.update_layout(title=dict(text=f'{var1} vs {var2} | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
                         xaxis_title=var2, yaxis_title=var1, height=400)

@@ -6,7 +6,7 @@ def drop_negative_values(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """Remove rows where the specified column has negative values."""
     print(f"\n-- Managing negative outliers for column: {column_name}")
     initial_count = len(df)
-    df = df[(df[column_name] >= 0) | (df[column_name].isna())].copy()
+    df = df[(df[column_name] >= 0) | (df[column_name].isna())]
     dropped = initial_count - len(df)
     print(f"Dropped {dropped} rows")
     return df
@@ -45,7 +45,7 @@ def fill_os_with_device_model(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def fill_null_with_random_bernouilli(df: pd.DataFrame, column_name: str, seed: int = 33) -> pd.DataFrame:
+def fill_null_with_random_bernouilli(df: pd.DataFrame, column_name: str, seed: int = 17) -> pd.DataFrame:
     """Fill null values in a binary column with random values based on column probability."""
     null_mask = df[column_name].isna()
     null_count = null_mask.sum()
@@ -57,11 +57,20 @@ def fill_null_with_random_bernouilli(df: pd.DataFrame, column_name: str, seed: i
     return df
 
 
+def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove duplicate rows from the dataset."""
+    initial_count = len(df)
+    df = df.drop_duplicates()
+    dropped = initial_count - len(df)
+    print(f"\n-- Removing duplicates\nInitial count: {initial_count}\nDropped {dropped} duplicate row(s)\nFinal count: {len(df)}")
+    return df
+
+
 def remove_rows_with_missing_user_id(df: pd.DataFrame, user_id_column: str = 'keychain') -> pd.DataFrame:
     """Remove rows where the user ID column has null values from the A/B test dataset."""
     null_count = df[user_id_column].isnull().sum()
     print(f"\n-- Removing rows with missing {user_id_column}\nNumber of null values in {user_id_column}: {null_count}")
     initial_count = len(df)
-    df = df[df[user_id_column].notna()].copy()
+    df = df[df[user_id_column].notna()]
     print(f"Dropped {initial_count - len(df)} rows with missing {user_id_column}")
     return df

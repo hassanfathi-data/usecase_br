@@ -3,7 +3,7 @@ import numpy as np
 
 class ModelParent:
     """Base class for all classification models."""
-    def __init__(self, name: str, random_state: int = 42):
+    def __init__(self, name: str, random_state: int = 73):
         self.name = name
         self.random_state = random_state
         self.model = None

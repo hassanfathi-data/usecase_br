@@ -37,12 +37,10 @@ def remove_top_1_percent(dataset: pd.DataFrame, variables: list) -> pd.DataFrame
 def prepare_features(df: pd.DataFrame, variables: list, target_var: str = 'd30'):
     """Prepare features by encoding categorical variables and selecting columns."""
     df = df[variables + [target_var]].copy()
-    label_encoders = {}
 
     for var in variables:
         if df[var].dtype == 'object' or pd.api.types.is_categorical_dtype(df[var]):
-            if var not in label_encoders:
-                label_encoders[var] = LabelEncoder()
-            df[var] = label_encoders[var].fit_transform(df[var].astype(str))
+            encoder = LabelEncoder()
+            df[var] = encoder.fit_transform(df[var].astype(str))
 
-    return df, label_encoders
+    return df

@@ -4,7 +4,7 @@ from .model_parent import ModelParent
 
 class LogisticRegressionModel(ModelParent):
     """Logistic Regression model class."""
-    def __init__(self, random_state: int = 42):
+    def __init__(self, random_state: int = 41):
         super().__init__("Logistic Regression", random_state)
     
     def get_model(self):
