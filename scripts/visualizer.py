@@ -3,6 +3,21 @@ import numpy as np
 import plotly.graph_objects as go
 
 TITLE_FONT = dict(size=14, color='black', family='Arial Black')
+LEGEND_CONFIG = dict(yanchor="top", y=0.99, xanchor="left", x=1.01, itemsizing="constant")
+
+
+def is_significant(p_val: float) -> str:
+    """Return 'Significant' or 'Not Significant' based on p-value."""
+    return 'Significant' if p_val < 0.05 else 'Not Significant'
+
+
+def add_legend_entries(fig: go.Figure, first_item):
+    """Add legend entries for color coding (only visible in legend)."""
+    if len(first_item) > 0:
+        fig.add_trace(go.Bar(x=[first_item[0]], y=[0], marker_color='blue',
+                            name='≥ 300 observations', showlegend=True, visible='legendonly'))
+        fig.add_trace(go.Bar(x=[first_item[0]], y=[0], marker_color='grey',
+                            name='< 300 observations', showlegend=True, visible='legendonly'))
 
 
 def qualitative_variables_impacts_on_retention(df: pd.DataFrame, qualitative_vars: list, target_var: str = 'd30', min_obs_low: int = 30, min_obs_high: int = 300):
@@ -15,55 +30,36 @@ def qualitative_variables_impacts_on_retention(df: pd.DataFrame, qualitative_var
         avg = df[df[var].isin(valid_modalities)].groupby(var)[target_var].mean().sort_values(ascending=False)
         colors = ['grey' if counts[mod] < min_obs_high else 'blue' for mod in avg.index]
         p_val = chi2_test(df, var, target_var)['p_value']
-        sig = 'Significant' if p_val < 0.05 else 'Not Significant'
+        sig = is_significant(p_val)
         avg_percent = avg.values * 100
         show_annotations = len(avg) <= 15
+
         fig = go.Figure(go.Bar(x=avg.index, y=avg_percent, marker_color=colors, 
                               text=[f'{val:.1f}%' for val in avg_percent] if show_annotations else None,
                               textposition='inside', textfont=dict(color='white'), showlegend=False))
         fig.update_xaxes(type='category', categoryorder='array', categoryarray=avg.index.tolist())
-        # Add legend entries for color coding (only visible in legend)
-        if len(avg) > 0:
-            fig.add_trace(go.Bar(x=[avg.index[0]], y=[0], marker_color='blue',
-                                name='≥ 300 observations', showlegend=True, visible='legendonly'))
-            fig.add_trace(go.Bar(x=[avg.index[0]], y=[0], marker_color='grey',
-                                name='< 300 observations', showlegend=True, visible='legendonly'))
+
+        add_legend_entries(fig, avg.index)
         fig.update_layout(title=dict(text=f'Average {target_var} by {var} | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
                         xaxis_title=var, yaxis_title=f'Average {target_var} (%)', height=400, showlegend=True,
-                        legend=dict(
-                            yanchor="top",
-                            y=0.99,
-                            xanchor="left",
-                            x=1.01,
-                            itemsizing="constant"
-                        ))
+                        legend=LEGEND_CONFIG)
         fig.show()
         figures.append(fig)
     return figures
 
 
-def _create_quantitative_fig(var_name, labels, avg, counts, p_val, target_var: str, min_obs: int):
+def create_quantitative_fig(var_name, labels, avg, counts, p_val, target_var: str, min_obs: int):
     """Create bar chart for quantitative variable impact on retention."""
     colors = ['grey' if counts[g] < min_obs else 'blue' for g in avg.index]
     percent = avg.values * 100
-    sig = 'Significant' if p_val < 0.05 else 'Not Significant'
+    sig = is_significant(p_val)
+
     fig = go.Figure(go.Bar(x=labels, y=percent, marker_color=colors, text=[f'{val:.1f}%' for val in percent], 
                           textposition='inside', textfont=dict(color='white'), showlegend=False))
-    # Add legend entries for color coding (only visible in legend)
-    if len(labels) > 0:
-        fig.add_trace(go.Bar(x=[labels[0]], y=[0], marker_color='blue',
-                            name='≥ 300 observations', showlegend=True, visible='legendonly'))
-        fig.add_trace(go.Bar(x=[labels[0]], y=[0], marker_color='grey',
-                            name='< 300 observations', showlegend=True, visible='legendonly'))
+    add_legend_entries(fig, labels)
     fig.update_layout(title=dict(text=f'{var_name} vs {target_var.upper()} Retention | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
                     xaxis_title=var_name.lower(), yaxis_title=f'Average {target_var.upper()} Retention (%)', height=400, showlegend=True,
-                    legend=dict(
-                        yanchor="top",
-                        y=0.99,
-                        xanchor="left",
-                        x=1.01,
-                        itemsizing="constant"
-                    ))
+                    legend=LEGEND_CONFIG)
     fig.show()
     return fig
 
@@ -72,10 +68,10 @@ def quantitative_variable_impact_on_retention(df: pd.DataFrame, target_var: str 
     """Display bar charts for age and session length showing relationship with retention."""
     from scripts.statistical_analyzer import chi2_test
     age_avg = df.groupby('age_segmented', observed=False)[target_var].mean().sort_index()
-    fig1 = _create_quantitative_fig('Age', [f"{int(i.left)}-{int(i.right)}" for i in age_avg.index], age_avg, 
+    fig1 = create_quantitative_fig('Age', [f"{int(i.left)}-{int(i.right)}" for i in age_avg.index], age_avg, 
                      df['age_segmented'].value_counts(), chi2_test(df, 'age_segmented', target_var)['p_value'], target_var, min_obs)
     session_avg = df.groupby('session_length_segmented', observed=False)[target_var].mean().sort_index()
-    fig2 = _create_quantitative_fig('Session Length', [f"{int(i.left/60)} mins" for i in session_avg.index], session_avg,
+    fig2 = create_quantitative_fig('Session Length', [f"{int(i.left/60)} mins" for i in session_avg.index], session_avg,
                      df['session_length_segmented'].value_counts(), chi2_test(df, 'session_length_segmented', target_var)['p_value'], target_var, min_obs)
     return [fig1, fig2]
 
@@ -92,10 +88,18 @@ def correlation_study(df: pd.DataFrame, min_obs: int = 30):
                           df[var2].isin(var2_counts[var2_counts >= min_obs].index)]
         contingency = pd.crosstab(filtered_df[var1], filtered_df[var2])
         p_val = chi2_test_pair(df, var1, var2, min_obs)['p_value']
-        sig = 'Significant' if p_val < 0.05 else 'Not Significant'
-        convert = lambda label, v: f"{int(label.left/60)} mins" if isinstance(label, pd.Interval) and v == 'session_length_segmented' else (f"{int(label.left)}-{int(label.right)}" if isinstance(label, pd.Interval) else str(label))
-        fig = go.Figure(data=go.Heatmap(z=contingency.values, x=[convert(x, var2) for x in contingency.columns], 
-                                       y=[convert(y, var1) for y in contingency.index], colorscale='Blues'))
+        sig = is_significant(p_val)
+
+        def convert_label(label, var_name):
+            """Convert interval labels to readable strings."""
+            if isinstance(label, pd.Interval):
+                if var_name == 'session_length_segmented':
+                    return f"{int(label.left/60)} mins"
+                return f"{int(label.left)}-{int(label.right)}"
+            return str(label)
+
+        fig = go.Figure(data=go.Heatmap(z=contingency.values, x=[convert_label(x, var2) for x in contingency.columns], 
+                                       y=[convert_label(y, var1) for y in contingency.index], colorscale='Blues'))
         fig.update_layout(title=dict(text=f'{var1} vs {var2} | P-Value: {p_val:.4f} ({sig})', font=TITLE_FONT), 
                         xaxis_title=var2, yaxis_title=var1, height=400)
         fig.show()
@@ -119,6 +123,7 @@ def display_distribution_histogram(df: pd.DataFrame, variable: str) -> go.Figure
     data = df[variable]
     mean_val, median_val, max_val = data.mean(), data.median(), data.max()
     pct_zero = (data == 0).sum() / len(data) * 100
+
     fig = go.Figure(go.Histogram(x=data, nbinsx=167, marker_color='blue'))
     fig.update_layout(title=dict(text=f'Distribution of {variable} | Mean: {mean_val:.2f}, Median: {median_val:.2f}, Max: {max_val:.2f}, %0: {pct_zero:.2f}%', font=TITLE_FONT),
         xaxis_title=variable, yaxis_title='Frequency', height=400, showlegend=False)
@@ -143,6 +148,7 @@ def time_series_by_group(df: pd.DataFrame, variables: list, date_column: str = '
         control_data = hourly_avg[hourly_avg[group_column] == 'control']
         overall_test_avg = df[df[group_column] == 'test'][var].mean()
         overall_control_avg = df[df[group_column] == 'control'][var].mean()
+
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=test_data['hour'], y=test_data[var], mode='lines+markers', 
                                 name=f'Test (Avg: {overall_test_avg:.3f})', line=dict(color='orange')))
@@ -171,7 +177,7 @@ def retention_correlation_heatmap(df: pd.DataFrame, retention_columns: list = ['
     corr_matrix = retention_correlation_matrix(df, retention_columns)
     if corr_matrix.empty:
         return go.Figure()
-    
+
     fig = go.Figure(data=go.Heatmap(
         z=corr_matrix.values,
         x=corr_matrix.columns,

@@ -38,6 +38,7 @@ def fill_os_with_device_model(df: pd.DataFrame) -> pd.DataFrame:
     print(f"\n-- Managing nulls for OS column using device_model\nNumber of null values: {os_null.sum()}")
     contains_apple = df['device_model'].str.contains('iPhone|iPad', case=False, na=False, regex=True)
     ios_count = (os_null & contains_apple).sum()
+
     df.loc[os_null & contains_apple, 'os'] = 'iOS'
     df.loc[os_null & ~contains_apple, 'os'] = 'Android'
     print(f"Replaced {ios_count} null(s) with iOS (found iPhone or iPad in device_model)\nReplaced {os_null.sum() - ios_count} null(s) with Android (the rest)")
@@ -50,6 +51,7 @@ def fill_null_with_random_bernouilli(df: pd.DataFrame, column_name: str, seed: i
     null_count = null_mask.sum()
     print(f"\n-- Managing nulls for binary column: {column_name}\nNumber of null values: {null_count}")
     prob = df[column_name].mean()
+
     df.loc[null_mask, column_name] = np.random.default_rng(seed).binomial(1, prob, size=null_count)
     print(f"Filled nulls with randomly generated binary values with a probability of {prob:.4f} (seed fixed to: {seed})")
     return df
@@ -62,16 +64,4 @@ def remove_rows_with_missing_user_id(df: pd.DataFrame, user_id_column: str = 'ke
     initial_count = len(df)
     df = df[df[user_id_column].notna()].copy()
     print(f"Dropped {initial_count - len(df)} rows with missing {user_id_column}")
-    return df
-
-
-def remove_duplicate_users(df: pd.DataFrame, user_id_column: str = 'keychain_udid', keep: str = 'first') -> pd.DataFrame:
-    """Remove duplicate rows based on user ID, keeping the first occurrence by default."""
-    initial_count = len(df)
-    duplicate_count = df[user_id_column].duplicated(keep=False).sum()
-    print(f"\n-- Removing duplicate users based on {user_id_column}")
-    print(f"Number of duplicate rows: {duplicate_count}")
-    df = df.drop_duplicates(subset=[user_id_column], keep=keep).copy()
-    dropped = initial_count - len(df)
-    print(f"Dropped {dropped} duplicate rows, keeping {keep} occurrence")
     return df
