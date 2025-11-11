@@ -63,3 +63,15 @@ def remove_rows_with_missing_user_id(df: pd.DataFrame, user_id_column: str = 'ke
     df = df[df[user_id_column].notna()].copy()
     print(f"Dropped {initial_count - len(df)} rows with missing {user_id_column}")
     return df
+
+
+def remove_duplicate_users(df: pd.DataFrame, user_id_column: str = 'keychain_udid', keep: str = 'first') -> pd.DataFrame:
+    """Remove duplicate rows based on user ID, keeping the first occurrence by default."""
+    initial_count = len(df)
+    duplicate_count = df[user_id_column].duplicated(keep=False).sum()
+    print(f"\n-- Removing duplicate users based on {user_id_column}")
+    print(f"Number of duplicate rows: {duplicate_count}")
+    df = df.drop_duplicates(subset=[user_id_column], keep=keep).copy()
+    dropped = initial_count - len(df)
+    print(f"Dropped {dropped} duplicate rows, keeping {keep} occurrence")
+    return df

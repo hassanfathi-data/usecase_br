@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 
 TITLE_FONT = dict(size=14, color='black', family='Arial Black')
@@ -116,10 +117,9 @@ def retention_comparison(df: pd.DataFrame, retention_columns: list = ['d0', 'd3'
 def display_distribution_histogram(df: pd.DataFrame, variable: str) -> go.Figure:
     """Display histogram for a single variable with statistics."""
     data = df[variable]
-    filtered_data = data[data <= data.quantile(0.90)]
     mean_val, median_val, max_val = data.mean(), data.median(), data.max()
     pct_zero = (data == 0).sum() / len(data) * 100
-    fig = go.Figure(go.Histogram(x=filtered_data, nbinsx=167, marker_color='blue'))
+    fig = go.Figure(go.Histogram(x=data, nbinsx=167, marker_color='blue'))
     fig.update_layout(title=dict(text=f'Distribution of {variable} | Mean: {mean_val:.2f}, Median: {median_val:.2f}, Max: {max_val:.2f}, %0: {pct_zero:.2f}%', font=TITLE_FONT),
         xaxis_title=variable, yaxis_title='Frequency', height=400, showlegend=False)
     fig.show()
