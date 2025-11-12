@@ -13,7 +13,7 @@ use_case/
 │   └── part1c_ab_test_analysis.ipynb
 ├── scripts/                # Python modules
 │   ├── data_cleaner.py     # Data cleaning operations
-│   ├── preprocessor.py     # Data preprocessing (segmentation, merging)
+│   ├── preprocessor.py     # Data preprocessing (segmentation)
 │   ├── visualizer.py       # Plotly visualizations
 │   ├── statistical_analyzer.py  # Statistical tests (chi2, t-test, permutation)
 │   ├── formatter.py        # Table formatting and PDF export
