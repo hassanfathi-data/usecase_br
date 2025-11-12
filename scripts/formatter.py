@@ -3,6 +3,8 @@ import os
 import tempfile
 import img2pdf
 from pathlib import Path
+from scripts.preprocessor import remove_top_1_percent
+from scripts.statistical_analyzer import student_test, permutation_test_func
 
 # Get project root (scripts/ -> use_case/)
 # IMPORTANT: Update this path to point to your use_case folder
@@ -12,8 +14,6 @@ OUTPUT_PATH = project_root / "output"
 
 def abtest_summary_table(df: pd.DataFrame, variables: list, group_column: str = 'ab_test_cohort') -> pd.DataFrame:
     """Create a table with means, t-test and permutation test results for each variable."""
-    from scripts.preprocessor import remove_top_1_percent
-    from scripts.statistical_analyzer import student_test, permutation_test_func
     results = []
     for var in variables:
         df_clean = remove_top_1_percent(df, [var])
@@ -46,7 +46,6 @@ def export_to_pdf(figures: list, filename: str = 'churn_risk_analysis.pdf'):
         image_paths = [os.path.join(tmpdir, f'fig_{i}.png') for i in range(len(figures))]
         for fig, path in zip(figures, image_paths):
             fig.write_image(path, width=800, height=400)
-
         with open(pdf_path, 'wb') as f:
             f.write(img2pdf.convert(image_paths))
 

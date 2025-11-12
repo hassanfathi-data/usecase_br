@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import chi2_contingency, permutation_test, ttest_ind
+from scripts.preprocessor import remove_top_1_percent
 
 
 def chi2_test(df: pd.DataFrame, variable: str, target_var: str = 'd30') -> dict:
@@ -40,7 +41,6 @@ def correlation_tests(df: pd.DataFrame, min_obs: int = 30) -> pd.DataFrame:
 
 def get_test_control_data(df: pd.DataFrame, variable: str, group_column: str = 'ab_test_cohort'):
     """Extract test and control group data after removing top 1% outliers."""
-    from scripts.preprocessor import remove_top_1_percent
     df_clean = remove_top_1_percent(df, [variable])
     test_data = df_clean[df_clean[group_column] == 'test'][variable].values
     control_data = df_clean[df_clean[group_column] == 'control'][variable].values
@@ -65,6 +65,4 @@ def permutation_test_func(df: pd.DataFrame, variable: str, group_column: str = '
 def retention_correlation_matrix(df: pd.DataFrame, retention_columns: list = ['d0', 'd3', 'd7', 'd14', 'd30']) -> pd.DataFrame:
     """Compute correlation matrix between retention variables (d0, d3, d7, d14, d30)."""
     available_columns = [col for col in retention_columns if col in df.columns]
-    if not available_columns:
-        return pd.DataFrame()
     return df[available_columns].corr()

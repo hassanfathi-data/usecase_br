@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+from scripts.statistical_analyzer import chi2_test, chi2_test_pair, retention_correlation_matrix
 
 TITLE_FONT = dict(size=14, color='black', family='Arial Black')
 LEGEND_CONFIG = dict(yanchor="top", y=0.99, xanchor="left", x=1.01, itemsizing="constant")
@@ -31,7 +32,6 @@ def convert_label(label, var_name: str) -> str:
 
 def qualitative_variables_impacts_on_retention(df: pd.DataFrame, qualitative_vars: list, target_var: str = 'd30', min_obs_low: int = 30, min_obs_high: int = 300):
     """Create bar charts showing average retention for each qualitative variable modality."""
-    from scripts.statistical_analyzer import chi2_test
     figures = []
     for var in qualitative_vars:
         counts = df[var].value_counts()
@@ -75,7 +75,6 @@ def create_quantitative_fig(var_name, labels, avg, counts, p_val, target_var: st
 
 def quantitative_variable_impact_on_retention(df: pd.DataFrame, target_var: str = 'd30', min_obs: int = 300):
     """Display bar charts for age and session length showing relationship with retention."""
-    from scripts.statistical_analyzer import chi2_test
     age_avg = df.groupby('age_segmented', observed=False)[target_var].mean().sort_index()
     fig1 = create_quantitative_fig('Age', [f"{int(i.left)}-{int(i.right)}" for i in age_avg.index], age_avg, 
                      df['age_segmented'].value_counts(), chi2_test(df, 'age_segmented', target_var)['p_value'], target_var, min_obs)
@@ -87,7 +86,6 @@ def quantitative_variable_impact_on_retention(df: pd.DataFrame, target_var: str 
 
 def correlation_study(df: pd.DataFrame, min_obs: int = 30):
     """Create heatmaps for correlation pairs with p-value and significance in title."""
-    from scripts.statistical_analyzer import chi2_test_pair
     pairs = [('session_length_segmented', 'had_meaningful'), ('country', 'locale'), ('country', 'timezone'), ('locale', 'timezone')]
     figures = []
     for var1, var2 in pairs:
@@ -174,10 +172,7 @@ def roc_curves_comparison(roc_data: list, best_model_name: str, best_score: floa
 
 def retention_correlation_heatmap(df: pd.DataFrame, retention_columns: list = ['d0', 'd3', 'd7', 'd14', 'd30']) -> go.Figure:
     """Create a heatmap showing correlations between retention variables."""
-    from scripts.statistical_analyzer import retention_correlation_matrix
     corr_matrix = retention_correlation_matrix(df, retention_columns)
-    if corr_matrix.empty:
-        return go.Figure()
 
     fig = go.Figure(data=go.Heatmap(
         z=corr_matrix.values,
